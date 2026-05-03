@@ -3477,8 +3477,21 @@ checksum = "fb80edb5308a8db52f47ec6f4b34a1c2b1066f15f8ac5c8ee42b5f2cfc4af3ea"
 dependencies = [
  "derive_more",
  "log",
- "orion-error-derive",
+ "orion-error-derive 0.7.2",
  "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "orion-error"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2b7fcd8c4e84622c4f49e65fb9e220ba72281b76f1928d17c55a1a7d4f2dc2d"
+dependencies = [
+ "log",
+ "orion-error-derive 0.8.0",
+ "serde",
+ "smol_str",
  "thiserror 2.0.18",
 ]
 
@@ -3487,6 +3500,17 @@ name = "orion-error-derive"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5979f4f7aae9b0ebb0f4130660e5fb94be1fac2bc9dade32f3a6f24ea703cff"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "orion-error-derive"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644841aa4820ccb5993ea6d42bb8984138e0b5004d23ae809eff6474bc5afe4b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3592,6 +3616,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "orion-variate"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03645f3e8e91eaf412d288f5806c4208ae9e98d0820f677973cb52aed5a6a1a5"
+dependencies = [
+ "derive-getters",
+ "derive_more",
+ "getset",
+ "indexmap",
+ "log",
+ "orion-error 0.8.0",
+ "os_info",
+ "serde",
+ "serde_derive",
+ "winnow",
+]
+
+[[package]]
 name = "orion_conf"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3624,6 +3666,23 @@ dependencies = [
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.18",
+ "toml",
+]
+
+[[package]]
+name = "orion_conf"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5086b08e71ce80653f7ef5053a7f478cf832c79bdaa2eb2b8fd4c163567c35f7"
+dependencies = [
+ "derive-getters",
+ "derive_more",
+ "log",
+ "orion-error 0.8.0",
+ "orion-variate 0.13.0",
+ "serde",
+ "serde_derive",
+ "serde_yaml",
  "toml",
 ]
 
@@ -5927,7 +5986,7 @@ dependencies = [
  "orion-error 0.7.2",
  "orion-sec 0.5.0",
  "orion-variate 0.12.0",
- "orion_conf 0.6.0",
+ "orion_conf 0.7.0",
  "rand 0.9.4",
  "reqwest",
  "rustls",
