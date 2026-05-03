@@ -5928,7 +5928,7 @@ dependencies = [
  "orion-sec 0.5.0",
  "orion-variate 0.12.0",
  "orion_conf 0.6.0",
- "rand 0.9.4",
+ "rand 0.10.1",
  "reqwest",
  "rustls",
  "semver",
