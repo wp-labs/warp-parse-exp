@@ -3477,8 +3477,20 @@ checksum = "fb80edb5308a8db52f47ec6f4b34a1c2b1066f15f8ac5c8ee42b5f2cfc4af3ea"
 dependencies = [
  "derive_more",
  "log",
- "orion-error-derive",
+ "orion-error-derive 0.7.2",
  "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "orion-error"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2b7fcd8c4e84622c4f49e65fb9e220ba72281b76f1928d17c55a1a7d4f2dc2d"
+dependencies = [
+ "log",
+ "orion-error-derive 0.8.0",
+ "smol_str",
  "thiserror 2.0.18",
 ]
 
@@ -3487,6 +3499,17 @@ name = "orion-error-derive"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5979f4f7aae9b0ebb0f4130660e5fb94be1fac2bc9dade32f3a6f24ea703cff"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "orion-error-derive"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644841aa4820ccb5993ea6d42bb8984138e0b5004d23ae809eff6474bc5afe4b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5924,7 +5947,7 @@ dependencies = [
  "hyper-util",
  "libc",
  "once_cell",
- "orion-error 0.7.2",
+ "orion-error 0.8.0",
  "orion-sec 0.5.0",
  "orion-variate 0.12.0",
  "orion_conf 0.6.0",
