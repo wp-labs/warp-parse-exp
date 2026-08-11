@@ -223,6 +223,15 @@ pub struct EngineReloadArgs {
     )]
     pub version: Option<String>,
 
+    /// 更新目标组（双 repo 模式必填）| Target group for update (required in dual-repo mode)
+    #[clap(
+        long = "group",
+        visible_alias = "组",
+        value_parser = ["models", "infra"],
+        help = "更新目标组：models 或 infra | Target group: models or infra"
+    )]
+    pub group: Option<String>,
+
     /// 自定义请求 ID | Override request ID
     #[clap(
         long = "request-id",
@@ -260,6 +269,15 @@ pub struct ConfUpdateArgs {
         help = "本次更新目标版本 | Target version for this update"
     )]
     pub version: Option<String>,
+
+    /// 更新目标组（双 repo 模式必填）| Target group for update (required in dual-repo mode)
+    #[clap(
+        long = "group",
+        visible_alias = "组",
+        value_parser = ["models", "infra"],
+        help = "更新目标组：models 或 infra | Target group: models or infra"
+    )]
+    pub group: Option<String>,
 
     /// JSON 输出 | JSON output
     #[clap(
@@ -361,7 +379,7 @@ pub enum UpdateChannel {
 
 #[derive(Parser)]
 #[command(
-    name = "wproj",
+    name = "wpadm",
     about = "Warp Flow Engine 项目管理工具\n\nwproj 是 Warp Flow Engine 的官方命令行工具，提供完整的项目生命周期管理功能，包括：
 • 项目初始化和配置管理
 • 数据源的检查、统计和验证
@@ -376,7 +394,12 @@ wproj is the official CLI tool for Warp Flow Engine, providing comprehensive pro
 • Model (rules/sources/sinks) management and monitoring
 • Knowledge base (KnowDB) creation and maintenance",
     version = CLAP_LONG_VERSION,
-    author = "Warp Flow Engine Team"
+    author = "Warp Flow Engine Team",
+    after_long_help = "ENVIRONMENT VARIABLES/环境变量:\n  \
+        WP_LANG=<locale>  设置提示语言: en_US.UTF-8 (English) / zh_CN.UTF-8 (中文, 默认); fallback 到 LANG\n  \
+        NO_COLOR=1        禁用彩色输出\n  \
+        UPDATE_BASE_URL=<url>  覆盖自动更新基础 URL\n  \
+        WPROJ_SELF_UPDATE_ROOT=<path>  覆盖自动更新本地根目录",
 )]
 pub struct WProjCli {
     /// 安静模式，减少输出信息 | Quiet mode with reduced output

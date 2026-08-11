@@ -1,5 +1,6 @@
 # Changelog
 
+
 [English](./CHANGELOG.en.md) | 中文
 
 All notable changes to this project will be documented in this file.
@@ -7,7 +8,217 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.5 Unreleased]
+## [0.25.14 latest]
+
+### Fixed
+- **OML 嵌套 object 成员静默丢弃**：修复嵌套 `object` 成员解析失败时该成员及其后兄弟字段被静默丢弃、加载仍成功的问题；`oml_map()` 校验 body 完整消费，非法成员使整个 OML 校验失败；新增 `pipe` 成员支持（`NestedAccessor::Pipe`）；目标列表容忍逗号前后空白
+- **OML read/take 参数静默丢弃**：修复 `read(...)`/`take(...)` 括号内非法参数被静默忽略的问题；现校验括号内完整消费，存在剩余内容时整体 OML 校验失败
+
+## [0.25.13] - 2026-08-09
+
+### Fixed
+- **`time_timestamp` 解析数字 `0` 为 Unix epoch**：修复 `time_timestamp` 字段类型拒绝数字 `0` 的问题（解析器原要求固定 10/13/16 位长度）；`0` 现解析为 Unix epoch（`1970-01-01 00:00:00 UTC`）；1–9 位整数按秒解析；10/13/16 位秒/毫秒/微秒行为不变；11–12 位值现在干净地失败而非部分消费。
+
+## [0.25.12] - 2026-08-08
+
+### Added
+- **OML/Time 时间戳函数**: 同步 `wp-motor v1.25.4`，新增 `Time::from_ts`/`from_ts_ms`/`from_ts_us`（秒/毫秒/微秒时间戳 → 时间），与 `to_ts`/`to_ts_ms`/`to_ts_us` 互为逆操作；六个函数的 `zone` 参数可选（默认东8区），超 i32 范围或 `|zone| > 23` 解析期报错，非法 zone 原样透传。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.25.3` → `v1.25.4`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）。
+
+## [0.25.11] - 2026-08-05
+
+### Added
+- **OML 内网富化**: 同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
+  中文：同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
+- **英文简写输出**: `intranet_ip` → `LAN`/`WAN`，`access_direct` → `L2L`/`L2W`/`W2L`/`W2W`（L=LAN、W=WAN、2=to）。
+- **OML 嵌套对象与对象数组**: 同步 `wp-motor v1.25.3`（#346），`object { ... }` 子值支持嵌套对象字面量；新增 `array { ... }` 聚合（对象/值字面量数组）；static 块支持嵌套对象/数组字面量。
+
+### Fixed
+- **IPv4-mapped IPv6 解析**: 同步 `wp-primitives 0.2.1`，修复 WPL `ip` 字段对 `::ffff:a.b.c.d` 形式 IPv4-mapped IPv6 地址误判解析失败的问题（此前此类地址会落入 miss）。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.25.1` → `v1.25.3`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-primitives` → `0.2.1`。
+
+## [0.25.10] - 2026-08-05
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+  中文：升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+
+## [0.25.9] - 2026-07-31
+
+### Added
+- **Parser/Event meta**: 同步 `wp-motor v1.23.8`，新增 `wp_event_md5` 字段（事件 payload 的 MD5 指纹），由配置项 `gen_event_md5` 控制（默认关，嵌在 `gen_msg_id` 下）；盖在主 record 与 `copy_event_parse` 旁路 record 上；可经 `wp_meta_disable` 关闭输出。
+- **Parser/copy_event_parse**: `copy_event_parse` 改为产出独立旁路 record，按目标 rule 的 `wpl_key` 路由到自己的 sink（原并入主 record）；支持跨包（`pkg/rule`）与同包裸名引用，裸名规范化为全路径以正确路由。
+- **Parser/`#[no_match]`**: 新增 `#[no_match]` 注解，声明 rule 不参与 `parse_event` 自动匹配但保留 sink 路由，供 `copy_event_parse` 旁路 record 经目标 pipeline 路由。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.7` → `v1.23.8`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-lang` → `0.4.3`。
+
+## [0.25.8] - 2026-07-11
+
+### Added
+- **Sink/Metadata**: 同步 `wp-motor v1.23.6`，JSON/CSV sink_group 输出默认携带固定运行时元字段 `wp_stream_tag` 与 `wp_event_id`；新增组级 `sink_group.wp_meta_disable`，可按组关闭指定元字段，例如 `["wp_stream_tag", "wp_event_id"]`。
+- **Benchmarks**: 同步 `sink_wp_meta` 基准，覆盖元信息输出与禁用路径的性能。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.5` → `v1.23.6`。
+- **Sink/Runtime**: 运行时元信息在 `SinkDispatcher`/sink_group 边界统一处理；单所有者记录通过 `Arc::try_unwrap` 避免不必要的 `DataRecord` clone。
+- **Config/Sinks**: `stream_tag_field` 只属于 source 配置，sink/wpgen output 参数中会报错；`wp_meta_disable` 只属于 sink_group，传给 connector validate/build 的 sink spec 会过滤运行时元参数。
+
+## [0.25.7] - 2026-07-08
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.6` → `v1.23.7`
+- **Dependencies**: 升级 `wp-connectors` `v0.15.8` → `v0.17.0`
+
+## [0.25.6] - 2026-07-08
+### Changed
+- **Dependencies**: 升级 `wp-connectors` `v0.15.6` → `v0.15.8`
+
+## [0.25.5] - 2026-07-06
+
+### Added
+- **wpgen/Config**: `wpgen.toml` 新增 `[models]` 段，支持 `wpl` 字段指定 WPL 规则/样本目录。配置优先级：`--wpl` CLI > `[models].wpl` > 默认 `./models/wpl/`。`[models].wpl` 指向无效/空目录时启动报错。
+- **Connector/Validate**: `merge_params` / `merge_source_params` / `merge_params_with_allowlist` 新增参数类型校验（`json_type_label`），配置项类型与 connector 默认值不一致时报错退出（如 `port = "9801"` 字符串覆盖整数默认值）。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.4` → `v1.23.5`
+
+### Fixed
+- **wpgen**: `validate_wpl_dir` 递归搜索子目录中的 `.wpl` 文件（之前只扫描顶层目录，嵌套的 WPL 规则不会被校验）
+
+
+## [0.25.4] - 2026-07-05
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.3` → `v1.23.4`
+  - `wpadm` 工具链（`data stat/validate/check`、`sources list/route`）支持目录式 source 格式（`wpsrc.toml` 不存在时自动扫描 `topology/sources/*.toml`）
+  - 修复 clippy `collapsible_if` / `unused_imports` 警告
+- **CLI**: 二进制 `wproj` → `wpadm`；`wproj` 作为向后兼容 symlink（`wproj → wpadm`）
+  - `Dockerfile` / `setup.sh` / `release.yml` 同步更新
+  - `_gal/work.gxl` 移除旧 `wproj` 二进制拷贝
+- **Dependencies**: 升级主要依赖
+  - `wp-motor`: `v1.22.6` → `v1.23.4`
+    - 新增 Redis 知识库 Provider 支持（`knowdb.toml` → `[provider.redis]`）
+    - 移除独立 `arrow-file` / `arrow-ipc` sink 后端，统一到 file/tcp sink
+    - 升级 `shadow-rs` 1.5 → 2.0，`wp-core-connectors` 0.3.3 → 0.5
+    - 修复 `wproj init` 模板兼容性、`ip4_to_int` IPv6 处理等
+  - `wp-connectors`: `v0.14.2` → `v0.15.6`
+  - `wp-knowledge`: `v0.13.0` → `v0.14.2`
+
+## [0.24.11] - 2026-06-25
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.8` 到 `v1.22.9`，同步 release tag / origin head 解析修正，以及相关基础设施更新。
+- **Dependencies**: 升级 `wp-lang` 从 `0.3.3` 到 `0.3.5`，同步 `kvarr_raw`、`kvarr` 重复 key 惰性处理、parser-only 性能基准和 WPL 文档更新。
+- **Lockfile**: 刷新 `Cargo.lock` 中的传递依赖版本。
+
+### Fixed
+- **Project Remote**: 修复 `project_remote` 在解析本地 tag、origin URL 和 remote HEAD 目标时的健壮性，避免部分 Git 状态下误判或报错。
+
+## [0.24.10] - 2026-06-25
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.8` 到 `v1.22.9`，同步 sink 批处理成功路径 record id 开销基准和错误日志路径的轻量化调整。
+- **Dependencies**: 升级 `wp-lang` 从 `0.3.3` 到 `0.3.4`，同步 parser-only 性能基准集合、空 pipe 快路径和 quoted `chars` 解析热路径优化。
+
+## [0.24.9] - 2026-06-23
+
+### Added
+- **Source Rate Limit**: 同步上游 `wp-motor v1.22.7`，新增 source 侧全局输入限速；`performance.rate_limit_rps = 0` 表示自动限速，`> 0` 表示所有 source 共享固定 EPS 上限。
+- **Memory Profiles**: 新增统一内存 profile 支持，可通过 `WP_MEMORY_PROFILE=standard|low|throughput` 控制运行时队列、水位、批大小和网络/文件缓冲等内存相关参数。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.6` 到 `v1.22.7`。
+  - 默认 `performance.rate_limit_rps` 从固定值改为 `0` 自动限速。
+  - 自动限速根据 picker pending 水位、parser 背压和 RSS 增长保护动态调整输入速率。
+  - source 限速等待前移到进入 pending 之前，减少限速场景下 pending/RSS 先膨胀。
+  - benchmark `wparse.toml` 使用 `${RATE_LIMIT_RPS:0}`，benchmark 脚本默认用输入速率同步设置 wparse 限速。
+- **DebugView**: Debug 输出改为有界队列，队列满时记录丢弃计数并抽样告警，避免无界队列造成 RSS 增长。
+
+## [0.24.8] - 2026-06-19
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.6`
+  - Generator 发送改为动态批量（`BatchSizePolicy`），TCP sink 下 `wpgen` CPU ~300% → ~15%
+  - 修复 `wp-core-connectors` crate 名称引用错误（连字符 → 下划线）
+
+## [0.24.7] - 2026-05-26
+
+### Changed
+- **Dependencies**: 升级 `wp-lang` 从 `0.3.2` 到 `0.3.3`。
+
+## [0.24.6] - 2026-05-26
+
+### Changed
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.14.0` 到 `v0.14.2`（v0.14.1 新增达梦数据库 Source/Sink 支持；v0.14.2 将 dmdb feature 移入 wp-connectors-exp 分类）；升级 `wp-lang` 从 `0.3.1` 到 `0.3.2`（修复 kvarr 中 `<[,]>` 在日志数据不存在或为空时未报错的问题）。
+
+### Fixed
+- **Event ID**: 修复 `wp_event_id` 相关问题，确保事件 ID 生成逻辑正确。
+
+## [0.24.5] - 2026-05-22
+
+### Changed
+- **Dependencies**: 升级 `wp-model-core` 从 `0.8.7` 到 `0.8.9`；升级 `tokio` 从 `1.52.2` 到 `1.52.3`、`openssl` 从 `0.10.79` 到 `0.10.80`、`serde_json` 从 `1.0.149` 到 `1.0.150`、`aws-lc-rs` 从 `1.16.3` 到 `1.17.0`、`os_info` 从 `3.14.0` 到 `3.15.0` 等多项传递依赖。
+
+### Fixed
+- **Model Core**: 修复 `wp-model-core` 相关 bug。
+
+## [0.24.4] - 2026-05-19
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.3` 到 `v1.22.4`，同步引入 `ip4_to_int` 修复——新增字符串 IPv4 地址解析支持，IPv6 地址改返回 Null 而非静默透传。
+
+## [0.24.3] - 2026-05-18
+
+### Added
+- **SQL/Route**: 新增 SQL 查询按表名路由到本地 SQLite 或外部 Provider 的能力——支持配置 `knowdb.toml` 的 `[[tables]]` 和 `[provider.tables]`，解析 SQL 时自动识别 `FROM` 子句中的表名并分发查询。
+- **KnowDB/Config**: 新增 `uses_external_provider_only()` 判定，纯外部 provider 配置不再删除本地 authority 文件。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.2` 到 `v1.22.3`，同步引入 SQL 路由、KnowDB 外部 Provider 支持、`sanitize_sql_body` 子查询与别名语法增强等改进。
+
+## [0.24.2] - 2026-05-13
+
+### Added
+- **Sinks/Sync**: 同步上游 `wp-motor` 新增的 `SinkTerminal` 批量写入方法（`send_to_sink_batch`、`try_send_to_sink_batch`），降低统计切片过多造成的反压。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.1` 到 `v1.22.2`，同步引入 sink 批量写入能力。
+
+## [0.24.1] - 2026-05-12
+
+### Fixed
+- **OML/SQL**: 同步上游修复，当 SQL 参数全部为 Null 时跳过实际查询，避免对空参数的不必要远程调用。
+- **OML/Extract**: 同步上游修复，`SingleEvalExp` 提取字段时跳过 `Value::Null`，不再为 Null 值创建目标字段。
+- **OML/SQL**: 同步上游修复知识库相关查询 bug。
+
+### Changed
+- **Knowledge Base**: 同步上游知识库查询优化。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.0` 到 `v1.22.1`，同步引入 OML/SQL 查询优化与知识库查询改进。
+
+## [0.24.0] - 2026-05-08
+
+### Added
+- **HTTP Source**: 新增 HTTP Source 连接器支持（`http` feature），支持通过 HTTP 接口接收外部数据推送。
+- **Postgres Source**: 新增 Postgres Source 特性继承支持；低版本兼容性适配。
+- **Project Remote**: 新增双仓库模式支持（`[project_remote.models]` + `[project_remote.infra]`），支持 `models/` 和 `infra/` 从两个独立的 Git 仓库分别同步，通过 `--group models|infra` 逐组更新。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.20.0` 到 `v1.22.0`，同步引入：`take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复、`stable_code` 双语错误提示、`orion-error 0.8` 升级适配等全部上游改进。
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.12.1` 到 `v0.14.0`（新增 HTTP Source、PostgreSQL Source 连接器）；
+- **Error Handling**: 全面升级错误治理体系 — `orion-error` 升级到 `0.8` 主线，，错误信息附带路径上下文，CLI 报错更完整可读。
+- **Admin API**: 支持监听地址配置修改；reload 接口新增 `group` 参数支持双仓库模式分组更新；status 接口在双仓库模式下返回分组版本信息。
+
+### Fixed
+- **OML/Take**: 同步上游修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正同名字段取值顺序。
+- **OML/SQL Parser**: 同步上游修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
+- 修复部分场景下运行时稳定性问题。
+
+## [0.22.5 ]
 
 ### Changed
 - **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。
